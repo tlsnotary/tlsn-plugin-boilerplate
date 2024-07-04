@@ -1,5 +1,7 @@
-import { icon } from '../dist/assets/icon';
+import icon from '../assets/icon.png';
 import config_json from '../config.json';
+import { redirect, notarize, outputJSON, getCookiesByHost, getHeadersByHost } from './utils/hf.js';
+
 /**
  * Plugin configuration
  * This configurations defines the plugin, most importantly:
@@ -8,12 +10,10 @@ import config_json from '../config.json';
  *  * the web requests it will query (or notarize)
  */
 export function config() {
-  Host.outputString(
-    JSON.stringify({
-      ...config_json,
-      icon: icon
-    }),
-  );
+  outputJSON({
+    ...config_json,
+    icon: icon
+  });
 }
 
 function isValidHost(urlString: string) {
@@ -22,25 +22,15 @@ function isValidHost(urlString: string) {
 }
 
 /**
- * Redirect the browser window to x.com
- * This uses the `redirect` host function (see index.d.ts)
- */
-function gotoTwitter() {
-  const { redirect } = Host.getFunctions() as any;
-  const mem = Memory.fromString('https://x.com');
-  redirect(mem.offset);
-}
-
-/**
  * Implementation of the first (start) plugin step
   */
 export function start() {
   if (!isValidHost(Config.get('tabUrl'))) {
-    gotoTwitter();
-    Host.outputString(JSON.stringify(false));
+    redirect('https://x.com');
+    outputJSON(false);
     return;
   }
-  Host.outputString(JSON.stringify(true));
+  outputJSON(true);
 }
 
 /**
@@ -50,38 +40,37 @@ export function start() {
  * Note that the url needs to be specified in the `config` too, otherwise the request will be refused.
  */
 export function two() {
-  const cookies = JSON.parse(Config.get('cookies'))['api.x.com'];
-  const headers = JSON.parse(Config.get('headers'))['api.x.com'];
+  const cookies = getCookiesByHost('api.x.com');
+  const headers = getHeadersByHost('api.x.com');
+
   if (
     !cookies.auth_token ||
     !cookies.ct0 ||
     !headers['x-csrf-token'] ||
     !headers['authorization']
   ) {
-    Host.outputString(JSON.stringify(false));
+    outputJSON(false);
     return;
   }
 
-  Host.outputString(
-    JSON.stringify({
-      url: 'https://api.x.com/1.1/account/settings.json',
-      method: 'GET',
-      headers: {
-        'x-twitter-client-language': 'en',
-        'x-csrf-token': headers['x-csrf-token'],
-        Host: 'api.x.com',
-        authorization: headers.authorization,
-        Cookie: `lang=en; auth_token=${cookies.auth_token}; ct0=${cookies.ct0}`,
-        'Accept-Encoding': 'identity',
-        Connection: 'close',
-      },
-      secretHeaders: [
-        `x-csrf-token: ${headers['x-csrf-token']}`,
-        `cookie: lang=en; auth_token=${cookies.auth_token}; ct0=${cookies.ct0}`,
-        `authorization: ${headers.authorization}`,
-      ],
-    }),
-  );
+  outputJSON({
+    url: 'https://api.x.com/1.1/account/settings.json',
+    method: 'GET',
+    headers: {
+      'x-twitter-client-language': 'en',
+      'x-csrf-token': headers['x-csrf-token'],
+      Host: 'api.x.com',
+      authorization: headers.authorization,
+      Cookie: `lang=en; auth_token=${cookies.auth_token}; ct0=${cookies.ct0}`,
+      'Accept-Encoding': 'identity',
+      Connection: 'close',
+    },
+    secretHeaders: [
+      `x-csrf-token: ${headers['x-csrf-token']}`,
+      `cookie: lang=en; auth_token=${cookies.auth_token}; ct0=${cookies.ct0}`,
+      `authorization: ${headers.authorization}`,
+    ],
+  });
 }
 
 /**
@@ -94,9 +83,6 @@ export function parseTwitterResp() {
   const bodyString = Host.inputString();
   const params = JSON.parse(bodyString);
 
-  // console.log("params");
-  // console.log(JSON.stringify(params));
-
   if (params.screen_name) {
     const revealed = `"screen_name":"${params.screen_name}"`;
     const selectionStart = bodyString.indexOf(revealed);
@@ -106,9 +92,9 @@ export function parseTwitterResp() {
       bodyString.substring(0, selectionStart),
       bodyString.substring(selectionEnd, bodyString.length),
     ];
-    Host.outputString(JSON.stringify(secretResps));
+    outputJSON(secretResps);
   } else {
-    Host.outputString(JSON.stringify(false));
+    outputJSON(false);
   }
 }
 
@@ -117,17 +103,14 @@ export function parseTwitterResp() {
  */
 export function three() {
   const params = JSON.parse(Host.inputString());
-  const { notarize } = Host.getFunctions() as any;
 
   if (!params) {
-    Host.outputString(JSON.stringify(false));
+    outputJSON(false);
   } else {
-    const mem = Memory.fromString(JSON.stringify({
+    const id = notarize({
       ...params,
       getSecretResponse: 'parseTwitterResp',
-    }));
-    const idOffset = notarize(mem.offset);
-    const id = Memory.find(idOffset).readString();
-    Host.outputString(JSON.stringify(id));
+    });
+    outputJSON(id);
   }
 }
