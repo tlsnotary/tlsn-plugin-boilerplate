@@ -2,6 +2,7 @@ import icon from '../assets/icon.png';
 import config_json from '../config.json';
 import { redirect, notarize, outputJSON, getCookiesByHost, getHeadersByHost } from './utils/hf.js';
 
+
 /**
  * Plugin configuration
  * This configurations defines the plugin, most importantly:
@@ -16,9 +17,13 @@ export function config() {
   });
 }
 
+
+// customer ID : xxxxx
+// password : xxxxx
+
 function isValidHost(urlString: string) {
   const url = new URL(urlString);
-  return url.hostname === 'twitter.com' || url.hostname === 'x.com';
+  return url.hostname === 'axisbank.com' || url.hostname === 'https://omni.axisbank.co.in/axisretailbanking/';
 }
 
 /**
@@ -26,7 +31,7 @@ function isValidHost(urlString: string) {
   */
 export function start() {
   if (!isValidHost(Config.get('tabUrl'))) {
-    redirect('https://x.com');
+    redirect('https://axisbank.com/');
     outputJSON(false);
     return;
   }
@@ -40,8 +45,8 @@ export function start() {
  * Note that the url needs to be specified in the `config` too, otherwise the request will be refused.
  */
 export function two() {
-  const cookies = getCookiesByHost('api.x.com');
-  const headers = getHeadersByHost('api.x.com');
+  const cookies = getCookiesByHost('axisbank.co.in');
+  const headers = getHeadersByHost('axisbank.co.in');
 
   if (
     !cookies.auth_token ||
