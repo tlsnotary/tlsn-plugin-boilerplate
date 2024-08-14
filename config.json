@@ -1,10 +1,10 @@
 {
-    "title": "Twitter Profile",
-    "description": "Notarize ownership of a twitter profile",
+    "title": "Axis Bank",
+    "description": "Notarize ownership of an Axis Bank account",
     "steps": [
         {
-            "title": "Visit Twitter website",
-            "cta": "Go to x.com",
+            "title": "Visit Axis Bank website",
+            "cta": "Go to axisbank.com or omni.axisbank.co.in",
             "action": "start"
         },
         {
@@ -14,7 +14,7 @@
             "action": "two"
         },
         {
-            "title": "Notarize twitter profile",
+            "title": "Notarize Axis Bank account",
             "cta": "Notarize",
             "action": "three",
             "prover": true
@@ -25,15 +25,17 @@
         "notarize"
     ],
     "cookies": [
-        "api.x.com"
+        "axisbank.co.in",
+        "omni.axisbank.co.in"
     ],
     "headers": [
-        "api.x.com"
+        "axisbank.co.in",
+        "omni.axisbank.co.in"
     ],
     "requests": [
         {
-            "url": "https://api.x.com/1.1/account/settings.json",
-            "method": "GET"
+            "url": "https://axisbank.tt.omtrdc.net/rest/v1/delivery",
+            "method": "POST"
         }
     ]
 }

@@ -23,7 +23,7 @@ export function config() {
 
 function isValidHost(urlString: string) {
   const url = new URL(urlString);
-  return url.hostname === 'axisbank.com' || url.hostname === 'https://omni.axisbank.co.in/axisretailbanking/';
+  return url.hostname === 'axisbank.com' || url.hostname === 'omni.axisbank.co.in';
 }
 
 /**
@@ -45,8 +45,19 @@ export function start() {
  * Note that the url needs to be specified in the `config` too, otherwise the request will be refused.
  */
 export function two() {
-  const cookies = getCookiesByHost('axisbank.co.in');
-  const headers = getHeadersByHost('axisbank.co.in');
+  const cookies = getCookiesByHost('omni.axisbank.co.in');
+  console.log("cookies bruhhh");
+  console.log(JSON.stringify(cookies));
+  let cookie_value = cookies["mbox"];
+  let session_id = cookie_value.match(/(?<=session#)[^#]+(?=#)/);
+  console.log(session_id);
+  const headers = getHeadersByHost('omni.axisbank.co.in');
+  console.log("headers");
+  console.log(JSON.stringify(headers));
+
+  //extract sessionID from cookies
+  // (?<=session#)[^#]+(?=#)
+  // sample cookie {"ElPQawDx":"Aw5FYE-RAQAAB-lcR2PfzcaV2ntvG4YA826yrdMxXZqlTMw0qt8Fyxu4EECZAZJG4C6uck0XwH9eCOfvosJeCA|1|1|04fe61e1aff93baafa39488044c968bea8f05f3d","JSESSIONID":"0000KiOy-AfuBFensDj1DsgEcEo:1efbjn7iu","XSRF-TOKEN":"VjvGF4AeIvdvRcrRF5oL3fDC","at_check":"true","dtCookie":"v_4_srv_17_sn_C98FF6DAB8815E97FB1C567BDECFEF54_perc_40839_ol_1_app-3A9073895510b19430_0","mbox":"session#90d3a4cec3e6444895d17aa9ce802450#1723615565"}
 
   if (
     !cookies.auth_token ||
