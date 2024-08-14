@@ -47,21 +47,17 @@ export function start() {
 export function two() {
   const cookies = getCookiesByHost('omni.axisbank.co.in');
   console.log("cookies bruhhh");
+  console.log(cookies["XSRF-TOKEN"]);
   console.log(JSON.stringify(cookies));
   let cookie_value = cookies["mbox"];
   let session_id = cookie_value.match(/(?<=session#)[^#]+(?=#)/);
   console.log(session_id);
   const headers = getHeadersByHost('omni.axisbank.co.in');
   console.log("headers");
-  console.log(JSON.stringify(headers));
-
-  //extract sessionID from cookies
-  // (?<=session#)[^#]+(?=#)
-  // sample cookie {"ElPQawDx":"Aw5FYE-RAQAAB-lcR2PfzcaV2ntvG4YA826yrdMxXZqlTMw0qt8Fyxu4EECZAZJG4C6uck0XwH9eCOfvosJeCA|1|1|04fe61e1aff93baafa39488044c968bea8f05f3d","JSESSIONID":"0000KiOy-AfuBFensDj1DsgEcEo:1efbjn7iu","XSRF-TOKEN":"VjvGF4AeIvdvRcrRF5oL3fDC","at_check":"true","dtCookie":"v_4_srv_17_sn_C98FF6DAB8815E97FB1C567BDECFEF54_perc_40839_ol_1_app-3A9073895510b19430_0","mbox":"session#90d3a4cec3e6444895d17aa9ce802450#1723615565"}
 
   if (
-    !cookies.auth_token ||
-    !cookies.ct0 ||
+    !cookies["XSRF-TOKEN"] ||
+    !cookies["mbox"] ||
     !headers['x-csrf-token'] ||
     !headers['authorization']
   ) {
@@ -70,8 +66,8 @@ export function two() {
   }
 
   outputJSON({
-    url: 'https://api.x.com/1.1/account/settings.json',
-    method: 'GET',
+    url: `https://axisbank.tt.omtrdc.net/rest/v1/delivery?client=axisbank&sessionId=${session_id}&version=2.9.0`,
+    method: 'POST',
     headers: {
       'x-twitter-client-language': 'en',
       'x-csrf-token': headers['x-csrf-token'],
