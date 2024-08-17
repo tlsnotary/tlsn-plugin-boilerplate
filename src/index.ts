@@ -68,20 +68,25 @@ export function two() {
   outputJSON({
     url: `https://axisbank.tt.omtrdc.net/rest/v1/delivery?client=axisbank&sessionId=${session_id}&version=2.9.0`,
     method: 'POST',
-    headers: {
-      'x-twitter-client-language': 'en',
-      'x-csrf-token': headers['x-csrf-token'],
-      Host: 'api.x.com',
-      authorization: headers.authorization,
-      Cookie: `lang=en; auth_token=${cookies.auth_token}; ct0=${cookies.ct0}`,
-      'Accept-Encoding': 'identity',
-      Connection: 'close',
+    body: {
+      "requestId": "tlsnotary-request",
+      "context": {
+        "timeOffsetInMinutes": 540, "channel": "web",
+        "address": {
+          "url": "https://omni.axisbank.co.in/axisretailbanking/",
+          "referringUrl": "https://www.axisbank.com/"
+        }
+      },
+      "property": { "token": "9ce88a12-5059-0b74-f70e-c211d1f59ba3" },
+      "execute": { "pageLoad": { "parameters": { "viewName": "omni_postlogin_accounts_LAST 10 TRANSACTIONS" } } }
     },
-    secretHeaders: [
-      `x-csrf-token: ${headers['x-csrf-token']}`,
-      `cookie: lang=en; auth_token=${cookies.auth_token}; ct0=${cookies.ct0}`,
-      `authorization: ${headers.authorization}`,
-    ],
+    headers: {
+      "Accept-Language": "en-GB,en;q=0.5",
+      'x-csrf-token': headers['x-csrf-token'],
+      "Origin": "https://omni.axisbank.co.in",
+      "Referer": "https://omni.axisbank.co.in/axisretailbanking/",
+      Cookie: cookies,
+    },
   });
 }
 
@@ -91,9 +96,11 @@ export function two() {
  *
  * In this example it locates the `screen_name` and excludes that range from the revealed response.
  */
-export function parseTwitterResp() {
+export function parseAxisResp() {
   const bodyString = Host.inputString();
   const params = JSON.parse(bodyString);
+  console.log("params");
+  console.log(params);
 
   if (params.screen_name) {
     const revealed = `"screen_name":"${params.screen_name}"`;
@@ -121,7 +128,7 @@ export function three() {
   } else {
     const id = notarize({
       ...params,
-      getSecretResponse: 'parseTwitterResp',
+      getSecretResponse: 'parseAxisResp',
     });
     outputJSON(id);
   }
