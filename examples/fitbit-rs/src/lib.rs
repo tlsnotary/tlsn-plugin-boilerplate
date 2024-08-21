@@ -1,5 +1,6 @@
 use std::{collections::HashMap, vec};
 
+use base64::{engine::general_purpose, Engine as _};
 use config::get;
 use extism_pdk::*;
 use serde::{Deserialize, Serialize};
@@ -10,13 +11,15 @@ use serde::{Deserialize, Serialize};
 struct PluginConfig {
     title: String,
     description: String,
-    icon: Option<String>,
+    icon: String,
     steps: Vec<StepConfig>,
     host_functions: Vec<String>,
     cookies: Vec<String>,
     headers: Vec<String>,
     requests: Vec<RequestObject>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     notary_urls: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     proxy_urls: Option<Vec<String>>,
 }
 
@@ -41,6 +44,11 @@ struct RequestObject {
 
 #[plugin_fn]
 pub fn config() -> FnResult<Json<PluginConfig>> {
+    let icon = format!(
+        "data:image/png;base64,{}",
+        general_purpose::STANDARD.encode(include_bytes!("../assets/icon.png"))
+    );
+
     let config = PluginConfig {
         title: String::from("Fitbit Profile"),
         description: String::from("Notarize ownership of a fitbit profile"),
@@ -69,7 +77,7 @@ pub fn config() -> FnResult<Json<PluginConfig>> {
         }],
         notary_urls: None,
         proxy_urls: None,
-        icon: None,
+        icon,
     };
     Ok(Json(config))
 }
