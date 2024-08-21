@@ -1,0 +1,39 @@
+{
+    "title": "Fitbit Profile",
+    "description": "Notarize ownership of a fitbit profile",
+    "steps": [
+        {
+            "title": "Open the Fitbit dashboard",
+            "description": "Login to your account if you haven't already",
+            "cta": "Go to fitbit.com",
+            "action": "start"
+        },
+        {
+            "title": "Check access token",
+            "cta": "Check access token",
+            "action": "two"
+        },
+        {
+            "title": "Notarize fitbit profile",
+            "cta": "Notarize",
+            "action": "three",
+            "prover": true
+        }
+    ],
+    "hostFunctions": [
+        "redirect",
+        "notarize"
+    ],
+    "cookies": [
+        "www.fitbit.com"
+    ],
+    "headers": [
+        "www.fitbit.com"
+    ],
+    "requests": [
+        {
+            "url": "https://web-api.fitbit.com/1/user/*/profile.json",
+            "method": "GET"
+        }
+    ]
+}

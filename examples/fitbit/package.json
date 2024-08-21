@@ -1,0 +1,17 @@
+{
+  "name": "fitbit_profile",
+  "version": "1.0.0",
+  "description": "TLSNotary plugin to notarize a fitbit profile",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "node esbuild.js"
+  },
+  "keywords": [],
+  "author": "TLSNotary",
+  "license": "MIT",
+  "devDependencies": {
+    "@extism/js-pdk": "^1.0.1",
+    "esbuild": "^0.19.6",
+    "typescript": "^5.3.2"
+  }
+}
