@@ -89,7 +89,7 @@ extern "ExtismHost" {
 
 #[host_fn]
 extern "ExtismHost" {
-    fn notarize(params: String);
+    fn notarize(params: String) -> String;
 }
 
 #[plugin_fn]
@@ -146,7 +146,7 @@ fn get_cookies_by_host(hostname: &str) -> Result<HashMap<String, String>, String
 }
 
 #[plugin_fn]
-pub fn two() -> FnResult<Json<bool>> {
+pub fn two() -> FnResult<Json<Option<String>>> {
     let a = String::from("oauth_access_token");
     match get_cookies_by_host("www.fitbit.com") {
         Ok(cookies) => {
@@ -155,7 +155,10 @@ pub fn two() -> FnResult<Json<bool>> {
                 Some(token) => {
                     log!(LogLevel::Info, "found token: {token:?}");
                     let headers: HashMap<String, String> = [
-                        ("authorization".to_string(), token.clone()),
+                        (
+                            "authorization".to_string(),
+                            (format!("Bearer {}", token)).to_string(),
+                        ),
                         ("Accept-Encoding".to_string(), "identity".to_string()),
                         ("Connection".to_string(), "close".to_string()),
                     ]
@@ -171,15 +174,18 @@ pub fn two() -> FnResult<Json<bool>> {
 
                     let y = serde_json::to_string(&request)?;
                     log!(LogLevel::Info, "request: {:?}", &y);
-                    unsafe {
-                        let _ = notarize(y);
+                    let id = unsafe {
+                        let id = notarize(y);
+                        log!(LogLevel::Info, "Notarization result: {:?}", id);
+                        id?
                     };
-                    return Ok(Json(true));
+
+                    return Ok(Json(Some(id)));
                 }
                 _ => log!(LogLevel::Error, "TODO"), /* TODO */
             }
         }
         Err(err) => println!("Error: {}", err),
     }
-    return Ok(Json(true));
+    return Ok(Json(None));
 }
