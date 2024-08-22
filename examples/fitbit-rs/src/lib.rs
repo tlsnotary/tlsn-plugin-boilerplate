@@ -28,6 +28,7 @@ struct PluginConfig {
 #[encoding(Json)]
 struct StepConfig {
     title: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     description: Option<String>,
     cta: String,
     action: String,
@@ -189,3 +190,29 @@ pub fn two() -> FnResult<Json<Option<String>>> {
     }
     return Ok(Json(None));
 }
+
+// #[plugin_fn]
+// pub fn parseResp() -> FnResult<Json<Option<String>>> {}
+
+// export function parseResp() {
+//     const bodyString = Host.inputString();
+//     const params = JSON.parse(bodyString);
+//     // console.log("params")
+//     // console.log(JSON.stringify(params))
+//     // console.log(JSON.stringify(params.user))
+//     // console.log(JSON.stringify(params.user.fullName))
+
+//     if (params?.user?.fullName) {
+//       const revealed = `"fullName":"${params.user.fullName}"`;
+//       const selectionStart = bodyString.indexOf(revealed);
+//       const selectionEnd =
+//         selectionStart + revealed.length;
+//       const secretResps = [
+//         bodyString.substring(0, selectionStart),
+//         bodyString.substring(selectionEnd, bodyString.length),
+//       ];
+//       outputJSON(secretResps);
+//     } else {
+//       outputJSON(false);
+//     }
+//   }
