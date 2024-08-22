@@ -8,73 +8,73 @@ use serde::{Deserialize, Serialize};
 #[derive(FromBytes, Deserialize, PartialEq, Debug, Serialize, ToBytes)]
 #[serde(rename_all = "camelCase")]
 #[encoding(Json)]
-struct PluginConfig {
-    title: String,
-    description: String,
+struct PluginConfig<'a> {
+    title: &'a str,
+    description: &'a str,
     icon: String,
-    steps: Vec<StepConfig>,
-    host_functions: Vec<String>,
-    cookies: Vec<String>,
-    headers: Vec<String>,
-    requests: Vec<RequestObject>,
+    steps: Vec<StepConfig<'a>>,
+    host_functions: Vec<&'a str>,
+    cookies: Vec<&'a str>,
+    headers: Vec<&'a str>,
+    requests: Vec<RequestObject<'a>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    notary_urls: Option<Vec<String>>,
+    notary_urls: Option<Vec<&'a str>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    proxy_urls: Option<Vec<String>>,
+    proxy_urls: Option<Vec<&'a str>>,
 }
 
 #[derive(FromBytes, Deserialize, PartialEq, Debug, Serialize, ToBytes)]
 #[serde(rename_all = "camelCase")]
 #[encoding(Json)]
-struct StepConfig {
-    title: String,
+struct StepConfig<'a> {
+    title: &'a str,
     #[serde(skip_serializing_if = "Option::is_none")]
-    description: Option<String>,
-    cta: String,
-    action: String,
+    description: Option<&'a str>,
+    cta: &'a str,
+    action: &'a str,
     prover: bool,
 }
 
 #[derive(FromBytes, Deserialize, PartialEq, Debug, Serialize, ToBytes)]
 #[serde(rename_all = "camelCase")]
 #[encoding(Json)]
-struct RequestObject {
-    url: String,
-    method: String,
+struct RequestObject<'a> {
+    url: &'a str,
+    method: &'a str,
 }
 
 #[plugin_fn]
-pub fn config() -> FnResult<Json<PluginConfig>> {
-    let icon = format!(
+pub fn config() -> FnResult<Json<PluginConfig<'static>>> {
+    let icon: String = format!(
         "data:image/png;base64,{}",
         general_purpose::STANDARD.encode(include_bytes!("../assets/icon.png"))
     );
 
     let config = PluginConfig {
-        title: String::from("Fitbit Profile"),
-        description: String::from("Notarize ownership of a fitbit profile"),
+        title: "Fitbit Profile",
+        description: "Notarize ownership of a fitbit profile",
         steps: vec![
             StepConfig {
-                title: String::from("Open the Fitbit dashboard"),
-                description: Some(String::from("Login to your account if you haven't already")),
-                cta: String::from("Go to fitbit.com"),
-                action: String::from("start"),
+                title: "Open the Fitbit dashboard",
+                description: Some("Login to your account if you haven't already"),
+                cta: "Go to fitbit.com",
+                action: "start",
                 prover: false,
             },
             StepConfig {
-                title: String::from("Notarize fitbit profile"),
-                cta: String::from("Notarize"),
-                action: String::from("two"),
+                title: "Notarize fitbit profile",
+                cta: "Notarize",
+                action: "two",
                 prover: true,
                 description: None,
             },
         ],
-        host_functions: vec![String::from("redirect"), String::from("notarize")],
-        cookies: vec![String::from("www.fitbit.com")],
-        headers: vec![String::from("www.fitbit.com")],
+        host_functions: vec!["redirect", "notarize"],
+        cookies: vec!["www.fitbit.com"],
+        headers: vec!["www.fitbit.com"],
         requests: vec![RequestObject {
-            url: String::from("https://web-api.fitbit.com/1/user/*/profile.json"),
-            method: String::from("GET"),
+            url: "https://web-api.fitbit.com/1/user/*/profile.json",
+            method: "GET",
         }],
         notary_urls: None,
         proxy_urls: None,
@@ -85,12 +85,12 @@ pub fn config() -> FnResult<Json<PluginConfig>> {
 
 #[host_fn]
 extern "ExtismHost" {
-    fn redirect(url: String);
+    fn redirect(url: &str);
 }
 
 #[host_fn]
 extern "ExtismHost" {
-    fn notarize(params: String) -> String;
+    fn notarize(params: &str) -> String;
 }
 
 #[plugin_fn]
@@ -98,12 +98,10 @@ pub fn start() -> FnResult<Json<bool>> {
     let dashboard_url = "https://www.fitbit.com/dashboard";
     let tab_url = get("tabUrl");
 
-    // log!(LogLevel::Info, "{tab_url:?}");
-
     if let Ok(Some(url)) = tab_url {
         if url != dashboard_url {
             unsafe {
-                let _ = redirect(dashboard_url.to_string());
+                let _ = redirect(dashboard_url);
             };
             return Ok(Json(false));
         }
@@ -117,11 +115,11 @@ pub fn start() -> FnResult<Json<bool>> {
 #[derive(FromBytes, Deserialize, PartialEq, Debug, Serialize, ToBytes)]
 #[serde(rename_all = "camelCase")]
 #[encoding(Json)]
-struct RequestConfig {
-    url: String,
-    method: String,
-    headers: HashMap<String, String>,
-    secret_headers: Vec<String>,
+struct RequestConfig<'a> {
+    url: &'a str,
+    method: &'a str,
+    headers: HashMap<&'a str, &'a str>,
+    secret_headers: Vec<&'a str>,
 }
 
 fn get_cookies_by_host(hostname: &str) -> Result<HashMap<String, String>, String> {
@@ -148,27 +146,25 @@ fn get_cookies_by_host(hostname: &str) -> Result<HashMap<String, String>, String
 
 #[plugin_fn]
 pub fn two() -> FnResult<Json<Option<String>>> {
-    let a = String::from("oauth_access_token");
+    let a = "oauth_access_token";
     match get_cookies_by_host("www.fitbit.com") {
         Ok(cookies) => {
             log!(LogLevel::Info, "cookies: {cookies:?}");
-            match cookies.get(&a) {
+            match cookies.get(a) {
                 Some(token) => {
                     log!(LogLevel::Info, "found token: {token:?}");
-                    let headers: HashMap<String, String> = [
-                        (
-                            "authorization".to_string(),
-                            (format!("Bearer {}", token)).to_string(),
-                        ),
-                        ("Accept-Encoding".to_string(), "identity".to_string()),
-                        ("Connection".to_string(), "close".to_string()),
+                    let bearer_header = format!("Bearer {}", token);
+                    let headers: HashMap<&str, &str> = [
+                        ("authorization", bearer_header.as_str()),
+                        ("Accept-Encoding", "identity"),
+                        ("Connection", "close"),
                     ]
                     .into_iter()
                     .collect();
-                    let secret_headers = vec![(format!("Bearer {}", token)).to_string()];
+                    let secret_headers = vec![bearer_header.as_str()];
                     let request = RequestConfig {
-                        url: "https://web-api.fitbit.com/1/user/4G7WVQ/profile.json".to_string(),
-                        method: "GET".to_string(),
+                        url: "https://web-api.fitbit.com/1/user/4G7WVQ/profile.json",
+                        method: "GET",
                         headers,
                         secret_headers,
                     };
@@ -176,19 +172,19 @@ pub fn two() -> FnResult<Json<Option<String>>> {
                     let y = serde_json::to_string(&request)?;
                     log!(LogLevel::Info, "request: {:?}", &y);
                     let id = unsafe {
-                        let id = notarize(y);
+                        let id = notarize(&y);
                         log!(LogLevel::Info, "Notarization result: {:?}", id);
                         id?
                     };
 
                     return Ok(Json(Some(id)));
                 }
-                _ => log!(LogLevel::Error, "TODO"), /* TODO */
+                _ => log!(LogLevel::Error, "TODO"),
             }
         }
         Err(err) => println!("Error: {}", err),
     }
-    return Ok(Json(None));
+    Ok(Json(None))
 }
 
 // #[plugin_fn]
