@@ -3,45 +3,13 @@ use std::{collections::HashMap, vec};
 use base64::{engine::general_purpose, Engine as _};
 use config::get;
 use extism_pdk::*;
-use serde::{Deserialize, Serialize};
 
-#[derive(FromBytes, Deserialize, PartialEq, Debug, Serialize, ToBytes)]
-#[serde(rename_all = "camelCase")]
-#[encoding(Json)]
-struct PluginConfig<'a> {
-    title: &'a str,
-    description: &'a str,
-    icon: String,
-    steps: Vec<StepConfig<'a>>,
-    host_functions: Vec<&'a str>,
-    cookies: Vec<&'a str>,
-    headers: Vec<&'a str>,
-    requests: Vec<RequestObject<'a>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    notary_urls: Option<Vec<&'a str>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    proxy_urls: Option<Vec<&'a str>>,
-}
-
-#[derive(FromBytes, Deserialize, PartialEq, Debug, Serialize, ToBytes)]
-#[serde(rename_all = "camelCase")]
-#[encoding(Json)]
-struct StepConfig<'a> {
-    title: &'a str,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    description: Option<&'a str>,
-    cta: &'a str,
-    action: &'a str,
-    prover: bool,
-}
-
-#[derive(FromBytes, Deserialize, PartialEq, Debug, Serialize, ToBytes)]
-#[serde(rename_all = "camelCase")]
-#[encoding(Json)]
-struct RequestObject<'a> {
-    url: &'a str,
-    method: &'a str,
-}
+mod types;
+use types::{PluginConfig, RequestConfig, RequestObject, StepConfig};
+mod host_functions;
+use host_functions::{notarize, redirect};
+mod utils;
+use utils::get_cookies_by_host;
 
 #[plugin_fn]
 pub fn config() -> FnResult<Json<PluginConfig<'static>>> {
@@ -83,65 +51,23 @@ pub fn config() -> FnResult<Json<PluginConfig<'static>>> {
     Ok(Json(config))
 }
 
-#[host_fn]
-extern "ExtismHost" {
-    fn redirect(url: &str);
-}
-
-#[host_fn]
-extern "ExtismHost" {
-    fn notarize(params: &str) -> String;
-}
-
 #[plugin_fn]
 pub fn start() -> FnResult<Json<bool>> {
     let dashboard_url = "https://www.fitbit.com/dashboard";
     let tab_url = get("tabUrl");
 
-    if let Ok(Some(url)) = tab_url {
-        if url != dashboard_url {
-            unsafe {
-                let _ = redirect(dashboard_url);
-            };
-            return Ok(Json(false));
-        }
-    } else {
+    let Ok(Some(url)) = tab_url else {
+        return Ok(Json(false));
+    };
+
+    if url != dashboard_url {
+        unsafe {
+            let _ = redirect(dashboard_url);
+        };
         return Ok(Json(false));
     }
 
     Ok(Json(true))
-}
-
-#[derive(FromBytes, Deserialize, PartialEq, Debug, Serialize, ToBytes)]
-#[serde(rename_all = "camelCase")]
-#[encoding(Json)]
-struct RequestConfig<'a> {
-    url: &'a str,
-    method: &'a str,
-    headers: HashMap<&'a str, &'a str>,
-    secret_headers: Vec<&'a str>,
-}
-
-fn get_cookies_by_host(hostname: &str) -> Result<HashMap<String, String>, String> {
-    let cookies_result = get("cookies");
-
-    // Check if the cookies were retrieved successfully
-    let cookies_json = match cookies_result {
-        Ok(Some(json_str)) => json_str,
-        Ok(None) => return Err("No cookies found in the configuration.".to_string()),
-        Err(e) => return Err(format!("Error retrieving cookies: {}", e)),
-    };
-
-    // Parse the JSON string directly into a HashMap
-    let cookies: HashMap<String, HashMap<String, String>> =
-        serde_json::from_str(&cookies_json).map_err(|e| format!("Failed to parse JSON: {}", e))?;
-
-    // Attempt to find the hostname in the map
-    if let Some(host_cookies) = cookies.get(hostname) {
-        Ok(host_cookies.clone())
-    } else {
-        Err(format!("Cannot find cookies for {}", hostname))
-    }
 }
 
 #[plugin_fn]
@@ -169,10 +95,10 @@ pub fn two() -> FnResult<Json<Option<String>>> {
                         secret_headers,
                     };
 
-                    let y = serde_json::to_string(&request)?;
-                    log!(LogLevel::Info, "request: {:?}", &y);
+                    let request_json = serde_json::to_string(&request)?;
+                    log!(LogLevel::Info, "request: {:?}", &request_json);
                     let id = unsafe {
-                        let id = notarize(&y);
+                        let id = notarize(&request_json);
                         log!(LogLevel::Info, "Notarization result: {:?}", id);
                         id?
                     };
@@ -182,33 +108,7 @@ pub fn two() -> FnResult<Json<Option<String>>> {
                 _ => log!(LogLevel::Error, "TODO"),
             }
         }
-        Err(err) => println!("Error: {}", err),
+        Err(err) => log!(LogLevel::Error, "{:?}", err),
     }
     Ok(Json(None))
 }
-
-// #[plugin_fn]
-// pub fn parseResp() -> FnResult<Json<Option<String>>> {}
-
-// export function parseResp() {
-//     const bodyString = Host.inputString();
-//     const params = JSON.parse(bodyString);
-//     // console.log("params")
-//     // console.log(JSON.stringify(params))
-//     // console.log(JSON.stringify(params.user))
-//     // console.log(JSON.stringify(params.user.fullName))
-
-//     if (params?.user?.fullName) {
-//       const revealed = `"fullName":"${params.user.fullName}"`;
-//       const selectionStart = bodyString.indexOf(revealed);
-//       const selectionEnd =
-//         selectionStart + revealed.length;
-//       const secretResps = [
-//         bodyString.substring(0, selectionStart),
-//         bodyString.substring(selectionEnd, bodyString.length),
-//       ];
-//       outputJSON(secretResps);
-//     } else {
-//       outputJSON(false);
-//     }
-//   }
