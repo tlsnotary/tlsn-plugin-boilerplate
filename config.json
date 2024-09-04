@@ -34,7 +34,7 @@
     ],
     "requests": [
         {
-            "url": "https://axisbank.tt.omtrdc.net/rest/v1/delivery",
+            "url": "https://axisbank.tt.omtrdc.net/rest/v1/delivery?*",
             "method": "POST"
         }
     ]

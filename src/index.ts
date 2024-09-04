@@ -57,9 +57,7 @@ export function two() {
 
   if (
     !cookies["XSRF-TOKEN"] ||
-    !cookies["mbox"] ||
-    !headers['x-csrf-token'] ||
-    !headers['authorization']
+    !cookies["mbox"]
   ) {
     outputJSON(false);
     return;
@@ -70,6 +68,7 @@ export function two() {
     method: 'POST',
     body: {
       "requestId": "tlsnotary-request",
+      "client": "axisbank",
       "context": {
         "timeOffsetInMinutes": 540, "channel": "web",
         "address": {
@@ -82,10 +81,14 @@ export function two() {
     },
     headers: {
       "Accept-Language": "en-GB,en;q=0.5",
-      'x-csrf-token': headers['x-csrf-token'],
       "Origin": "https://omni.axisbank.co.in",
       "Referer": "https://omni.axisbank.co.in/axisretailbanking/",
-      Cookie: cookies,
+      Cookie: Object.entries(cookies)
+        .map(([k, v]) => {
+          return `${k}=${v}`;
+        }, '').join('; '),
+      'Accept-Encoding': 'identity',
+      Connection: 'close',
     },
   });
 }
@@ -100,7 +103,7 @@ export function parseAxisResp() {
   const bodyString = Host.inputString();
   const params = JSON.parse(bodyString);
   console.log("params");
-  console.log(params);
+  console.log(JSON.stringify(params));
 
   if (params.screen_name) {
     const revealed = `"screen_name":"${params.screen_name}"`;
@@ -122,6 +125,8 @@ export function parseAxisResp() {
  */
 export function three() {
   const params = JSON.parse(Host.inputString());
+  console.log("three params");
+  console.log(JSON.stringify(params));
 
   if (!params) {
     outputJSON(false);
