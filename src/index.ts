@@ -46,13 +46,14 @@ export function start() {
  */
 export function two() {
   const cookies = getCookiesByHost('omni.axisbank.co.in');
+  const headers = getHeadersByHost('omni.axisbank.co.in');
+
   console.log("cookies bruhhh");
   console.log(cookies["XSRF-TOKEN"]);
   console.log(JSON.stringify(cookies));
   let cookie_value = cookies["mbox"];
   let session_id = cookie_value.match(/(?<=session#)[^#]+(?=#)/);
   console.log(session_id);
-  const headers = getHeadersByHost('omni.axisbank.co.in');
   console.log("headers");
 
   if (
@@ -66,11 +67,11 @@ export function two() {
   outputJSON({
     url: `https://axisbank.tt.omtrdc.net/rest/v1/delivery?client=axisbank&sessionId=${session_id}&version=2.9.0`,
     method: 'POST',
-    body: {
+    body: JSON.stringify({
       "requestId": "tlsnotary-request",
-      "client": "axisbank",
       "context": {
-        "timeOffsetInMinutes": 540, "channel": "web",
+        "timeOffsetInMinutes": 540,
+        "channel": "web",
         "address": {
           "url": "https://omni.axisbank.co.in/axisretailbanking/",
           "referringUrl": "https://www.axisbank.com/"
@@ -78,15 +79,14 @@ export function two() {
       },
       "property": { "token": "9ce88a12-5059-0b74-f70e-c211d1f59ba3" },
       "execute": { "pageLoad": { "parameters": { "viewName": "omni_postlogin_accounts_LAST 10 TRANSACTIONS" } } }
-    },
+    }),
     headers: {
       "Accept-Language": "en-GB,en;q=0.5",
       "Origin": "https://omni.axisbank.co.in",
-      "Referer": "https://omni.axisbank.co.in/axisretailbanking/",
+      "Referer": "https://omni.axisbank.co.in/",
+      "Content-Type": "application/json",
       Cookie: Object.entries(cookies)
-        .map(([k, v]) => {
-          return `${k}=${v}`;
-        }, '').join('; '),
+        .map(([k, v]) => `${k}=${v}`).join('; '),
       'Accept-Encoding': 'identity',
       Connection: 'close',
     },
@@ -100,16 +100,32 @@ export function two() {
  * In this example it locates the `screen_name` and excludes that range from the revealed response.
  */
 export function parseAxisResp() {
+  console.log("parseAxisResp HOST : inputBytes,inputString, ",
+    Host.inputBytes(),
+    Host.inputString(),
+  );
   const bodyString = Host.inputString();
-  const params = JSON.parse(bodyString);
-  console.log("params");
+  let params;
+  try {
+    params = JSON.parse(bodyString);
+  } catch (e) {
+    console.error("Error parsing JSON:", e);
+    outputJSON(false);
+    return;
+  }
+  console.log("params parseAxisRsp");
   console.log(JSON.stringify(params));
 
-  if (params.screen_name) {
-    const revealed = `"screen_name":"${params.screen_name}"`;
+  if (params.status === 400) {
+    console.error("Received error response:", params.message);
+    outputJSON(false);
+    return;
+  }
+
+  if (params.id && params.id.tntId) {
+    const revealed = `"tntId":"${params.id.tntId}"`;
     const selectionStart = bodyString.indexOf(revealed);
-    const selectionEnd =
-      selectionStart + revealed.length;
+    const selectionEnd = selectionStart + revealed.length;
     const secretResps = [
       bodyString.substring(0, selectionStart),
       bodyString.substring(selectionEnd, bodyString.length),
