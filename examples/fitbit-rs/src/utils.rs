@@ -1,26 +1,19 @@
 use std::collections::HashMap;
 
+use anyhow::Context;
 use config::get;
 use extism_pdk::*;
 
-pub fn get_cookies_by_host(hostname: &str) -> Result<HashMap<String, String>, String> {
-    let cookies_result = get("cookies");
-
-    // Check if the cookies were retrieved successfully
-    let cookies_json = match cookies_result {
-        Ok(Some(json_str)) => json_str,
-        Ok(None) => return Err("No cookies found in the configuration.".to_string()),
-        Err(e) => return Err(format!("Error retrieving cookies: {}", e)),
-    };
+pub fn get_cookies_by_host(hostname: &str) -> Result<HashMap<String, String>, Error> {
+    // Get Cookies via Extism
+    let cookies_json: String = get("cookies")?.context("No cookies found in the configuration.")?;
 
     // Parse the JSON string directly into a HashMap
-    let cookies: HashMap<String, HashMap<String, String>> =
-        serde_json::from_str(&cookies_json).map_err(|e| format!("Failed to parse JSON: {}", e))?;
+    let cookies: HashMap<String, HashMap<String, String>> = serde_json::from_str(&cookies_json)?;
 
     // Attempt to find the hostname in the map
-    if let Some(host_cookies) = cookies.get(hostname) {
-        Ok(host_cookies.clone())
-    } else {
-        Err(format!("Cannot find cookies for {}", hostname))
-    }
+    cookies
+        .get(hostname)
+        .cloned()
+        .context(format!("Cannot find cookies for {}", hostname))
 }

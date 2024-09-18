@@ -72,43 +72,36 @@ pub fn start() -> FnResult<Json<bool>> {
 
 #[plugin_fn]
 pub fn two() -> FnResult<Json<Option<String>>> {
-    let a = "oauth_access_token";
-    match get_cookies_by_host("www.fitbit.com") {
-        Ok(cookies) => {
-            log!(LogLevel::Info, "cookies: {cookies:?}");
-            match cookies.get(a) {
-                Some(token) => {
-                    log!(LogLevel::Info, "found token: {token:?}");
-                    let bearer_header = format!("Bearer {}", token);
-                    let headers: HashMap<&str, &str> = [
-                        ("authorization", bearer_header.as_str()),
-                        ("Accept-Encoding", "identity"),
-                        ("Connection", "close"),
-                    ]
-                    .into_iter()
-                    .collect();
-                    let secret_headers = vec![bearer_header.as_str()];
-                    let request = RequestConfig {
-                        url: "https://web-api.fitbit.com/1/user/4G7WVQ/profile.json",
-                        method: "GET",
-                        headers,
-                        secret_headers,
-                    };
+    let cookies = get_cookies_by_host("www.fitbit.com")?;
+    log!(LogLevel::Info, "cookies: {cookies:?}");
 
-                    let request_json = serde_json::to_string(&request)?;
-                    log!(LogLevel::Info, "request: {:?}", &request_json);
-                    let id = unsafe {
-                        let id = notarize(&request_json);
-                        log!(LogLevel::Info, "Notarization result: {:?}", id);
-                        id?
-                    };
+    let token = cookies
+        .get("oauth_access_token")
+        .ok_or_else(|| Error::msg("oauth_access_token not found"))?;
+    log!(LogLevel::Info, "found token: {token:?}");
+    let bearer_header = format!("Bearer {}", token);
+    let headers: HashMap<&str, &str> = [
+        ("authorization", bearer_header.as_str()),
+        ("Accept-Encoding", "identity"),
+        ("Connection", "close"),
+    ]
+    .into_iter()
+    .collect();
+    let secret_headers = vec![bearer_header.as_str()];
+    let request = RequestConfig {
+        url: "https://web-api.fitbit.com/1/user/4G7WVQ/profile.json",
+        method: "GET",
+        headers,
+        secret_headers,
+    };
 
-                    return Ok(Json(Some(id)));
-                }
-                _ => log!(LogLevel::Error, "TODO"),
-            }
-        }
-        Err(err) => log!(LogLevel::Error, "{:?}", err),
-    }
-    Ok(Json(None))
+    let request_json = serde_json::to_string(&request)?;
+    log!(LogLevel::Info, "request: {:?}", &request_json);
+    let id = unsafe {
+        let id = notarize(&request_json);
+        log!(LogLevel::Info, "Notarization result: {:?}", id);
+        id?
+    };
+
+    return Ok(Json(Some(id)));
 }
