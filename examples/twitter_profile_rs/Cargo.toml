@@ -1,0 +1,17 @@
+[package]
+name = "twitter_profile_rs"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+anyhow = "1.0.89"
+base64 = "0.22.1"
+## The version needs to be locked to 1.2.0 until Extism in the browser extension is updated
+extism-pdk = "=1.2.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+spansy = { git = "https://github.com/tlsnotary/tlsn-utils", rev = "45370cc" }
+url = "2.5.2"
