@@ -10,7 +10,7 @@ TLSNotary's plugin system uses [Extism](https://github.com/extism), which enable
 
     ```sh
     curl -O https://raw.githubusercontent.com/extism/js-pdk/main/install.sh
-    sh install.sh
+    bash install.sh
     ```
 
     This script installs the Extism JavaScript Plugin Development Kit from its GitHub repository, preparing your environment for plugin compilation.
