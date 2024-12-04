@@ -3,7 +3,7 @@ function isValidHost(urlString) {
   return url.hostname === 'discord.com' || url.hostname === 'discord.gg'
 }
 
-// https://discord.com/channels/@me/1252416264475770891
+
 function gotoDiscord() {
   const { redirect } = Host.getFunctions();
   const mem = Memory.fromString('https://discord.com/channels/@me');
@@ -27,6 +27,7 @@ function start() {
   }
   Host.outputString(JSON.stringify(true));
 }
+
 
 function two() {
   const conversationId = extractConversationId(Config.get('tabUrl'));
@@ -64,17 +65,36 @@ function two() {
   )
 }
 
+function parseDiscordDm() {
+  const bodyString = Host.inputString();
+  const params = JSON.parse(bodyString);
+  console.log('PARAMS', JSON.stringify(params[0].content));
+  if (params[0].content) {
+    const revealed = `"content":"${params[0].content}"`;
+    const selectionStart = bodyString.indexOf(revealed);
+    const selectionEnd = selectionStart + revealed.length;
+    const secretResps = [
+      bodyString.substring(0, selectionStart),
+      bodyString.substring(selectionEnd, bodyString.length),
+    ];
+    Host.outputString(JSON.stringify(secretResps));
+  } else {
+    Host.outputString(JSON.stringify(false));
+  }
+}
+
+
 function three() {
   const params = JSON.parse(Host.inputString());
   const { notarize } = Host.getFunctions();
-
-  // console.log("params");
-  // console.log(JSON.stringify(params));
-
+  console.log(JSON.stringify('THREE PARAMS', params));
   if (!params) {
     Host.outputString(JSON.stringify(false));
   } else {
-    const mem = Memory.fromString(JSON.stringify(params));
+    const mem = Memory.fromString(JSON.stringify({
+        ...params,
+       getSecretResponse: 'parseDiscordDm'
+    }));
     const idOffset = notarize(mem.offset);
     const id = Memory.find(idOffset).readString();
     Host.outputString(JSON.stringify(id));
@@ -108,7 +128,6 @@ function config() {
         }
       ],
       hostFunctions: ['redirect', 'notarize'],
-      cookies: [],
       headers: ['discord.com'],
       requests: [
         {
@@ -121,4 +140,4 @@ function config() {
 }
 
 
-module.exports = { config, start, two, three };
+module.exports = { config, start, two, three, parseDiscordDm };
