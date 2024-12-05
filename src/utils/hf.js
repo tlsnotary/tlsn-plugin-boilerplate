@@ -30,10 +30,24 @@ function getHeadersByHost(hostname) {
   return headers[hostname];
 }
 
+function getLocalStorageByHost(hostname) {
+  const localStorage = JSON.parse(Config.get('localStorage'));
+  if (!localStorage[hostname]) throw new Error(`cannot find local storage for ${hostname}`);
+  return localStorage[hostname];
+}
+
+function getSessionStorageByHost(hostname) {
+  const sessionStorage = JSON.parse(Config.get('sessionStorage'));
+  if (!sessionStorage[hostname]) throw new Error(`cannot find session storage for ${hostname}`);
+  return sessionStorage[hostname];
+}
+
 module.exports = {
   redirect,
   notarize,
   outputJSON,
   getCookiesByHost,
   getHeadersByHost,
+  getLocalStorageByHost,
+  getSessionStorageByHost,
 };
