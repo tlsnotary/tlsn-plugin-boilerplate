@@ -25,8 +25,6 @@ function two() {
   const localStorage = JSON.parse(Config.get('localStorage'))['discord.com'];
   const headers = JSON.parse(Config.get('headers'))['discord.com'];
 
-  console.log('USER ID', localStorage.user_id_cache);
-  console.log('HEADERS', JSON.stringify(headers));
   if (
     !localStorage.user_id_cache ||
     !headers['Authorization']
@@ -35,7 +33,8 @@ function two() {
     return;
   }
 
-  let userId = '"117505337317130248"';
+  let userId = localStorage.user_id_cache;
+
   userId = userId.replace(/"/g, "");
 
   Host.outputString(
@@ -110,13 +109,12 @@ function config() {
       steps: [
         {
           title: "Goto Discord",
-          description: "Log in to your Discord if you haven't already",
           cta: "Go to discord.com",
           action: 'start'
         },
         {
           title: 'Collect credentials',
-          description: "Get localstorage and headers from Discord",
+          description: "Log in to your Discord if you haven't already",
           cta: 'Check localstorage',
           action: 'two',
         },
