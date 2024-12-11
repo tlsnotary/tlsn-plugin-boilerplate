@@ -25,10 +25,10 @@
         "notarize"
     ],
     "cookies": [
-        "api.x.com"
+        "https://api.x.com/1.1/account/settings.json"
     ],
     "headers": [
-        "api.x.com"
+        "https://api.x.com/1.1/account/settings.json"
     ],
     "requests": [
         {
