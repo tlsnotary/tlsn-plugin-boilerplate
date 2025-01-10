@@ -1,0 +1,37 @@
+{
+    "title": "Spotify Top Artist",
+    "description": "Notarize your favorite artist on Spotify",
+    "steps": [
+        {
+            "title": "Visit Spotify webplayer",
+            "cta": "Go",
+            "action": "start"
+        },
+        {
+            "title": "Collect credentials",
+            "description": "Login to your account if you haven't already",
+            "cta": "Go",
+            "action": "two"
+        },
+        {
+            "title": "Notarize",
+            "cta": "Notarize",
+            "action": "three",
+            "prover": true
+        }
+    ],
+    "hostFunctions": [
+        "redirect",
+        "notarize"
+    ],
+    "cookies": [],
+    "headers": [
+        "api.spotify.com"
+    ],
+    "requests": [
+        {
+            "url": "https://api.spotify.com/v1/me/top/artists?time_range=medium_term&limit=1",
+            "method": "GET"
+        }
+    ]
+}
