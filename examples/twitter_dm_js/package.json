@@ -1,5 +1,5 @@
 {
-  "name": "twitter_profile",
+  "name": "twitter_dm",
   "version": "1.0.0",
   "description": "Demo TLSNotary plugin to notarize the ownership of a twitter profile",
   "main": "src/index.ts",
