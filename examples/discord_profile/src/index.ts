@@ -1,45 +1,38 @@
-function isValidHost(urlString) {
+import { redirect, notarize, outputJSON, getLocalStorageByHost, getHeadersByHost } from '../../../src/utils/hf';
+
+function isValidHost(urlString: string) {
   const url = new URL(urlString);
   return url.hostname === 'discord.com' || url.hostname === 'discord.gg'
 }
 
-
-function gotoDiscord() {
-  const { redirect } = Host.getFunctions();
-  const mem = Memory.fromString('https://discord.com/channels/@me');
-  redirect(mem.offset);
-}
-
-function start() {
+export function start() {
   if (!isValidHost(Config.get('tabUrl'))) {
-    gotoDiscord();
-    Host.outputString(JSON.stringify(false));
+    redirect('https://discord.com/channels/@me')
+    outputJSON(false);
     return;
   }
-  Host.outputString(JSON.stringify(true));
+  outputJSON(true);
 }
 
 
-function two() {
-  const localStorage = JSON.parse(Config.get('localStorage'))['discord.com'];
+export function two() {
+  const localStorage = getLocalStorageByHost('discord.com');
   let userId = localStorage.user_id_cache;
   userId = userId.replace(/"/g, "");
   console.log(JSON.stringify(localStorage));
 
-  const headers = JSON.parse(Config.get('headers'))[`https://discord.com/api/v9/users/${userId}/profile`];
+  const headers = getHeadersByHost(`https://discord.com/api/v9/users/${userId}/profile`)
   console.log(JSON.stringify(headers));
-
 
   if (
     !localStorage.user_id_cache ||
     !headers['Authorization']
   ) {
-    Host.outputString(JSON.stringify(false));
+    outputJSON(false);
     return;
   }
 
-  Host.outputString(
-    JSON.stringify({
+  outputJSON({
     url: `https://discord.com/api/v9/users/${userId}/profile`,
     method: 'GET',
     headers: {
@@ -53,10 +46,10 @@ function two() {
     secretHeaders: [
       `Authorization: ${headers['Authorization']}`
     ]
-  }))
+  });
 }
 
-function parseDiscordProfile() {
+export function parseDiscordProfile() {
   const bodyString = Host.inputString();
   const params = JSON.parse(bodyString);
 
@@ -68,7 +61,7 @@ function parseDiscordProfile() {
 
     const selectionStart = bodyString.indexOf(revealed);
     if (selectionStart === -1) {
-      Host.outputString(JSON.stringify([bodyString]));
+      outputJSON([bodyString]);
       return;
     }
 
@@ -77,37 +70,32 @@ function parseDiscordProfile() {
       bodyString.substring(0, selectionStart),
       bodyString.substring(selectionEnd),
     ];
-    Host.outputString(JSON.stringify(secretResps));
+    outputJSON(secretResps);
   } else {
-    Host.outputString(JSON.stringify(false));
+    outputJSON(false);
   }
 }
 
 
-
-function three() {
+export function three() {
   const params = JSON.parse(Host.inputString());
-  const { notarize } = Host.getFunctions();
 
   if (!params) {
-    Host.outputString(JSON.stringify(false))
+    outputJSON(false);
   } else {
-    const mem = Memory.fromString(JSON.stringify({
+    const id = notarize({
       ...params,
       getSecretResponse: 'parseDiscordProfile'
-    }));
-    const idOffset = notarize(mem.offset);
-    const id = Memory.find(idOffset).readString();
-    Host.outputString(JSON.stringify(id));
+    })
+    outputJSON(id);
   }
 }
 
 
 
-function config() {
-  Host.outputString(
-    JSON.stringify({
-      title: 'Discord Profile',
+export function config() {
+ outputJSON({
+  title: 'Discord Profile',
       description: 'Notarize your Discord Profile',
 
       steps: [
@@ -142,9 +130,5 @@ function config() {
           method: 'GET',
         },
       ],
-    }),
-  );
+ })
 }
-
-
-module.exports = { start, two, config, three, parseDiscordProfile };
