@@ -1,7 +1,7 @@
 import { redirect, notarize, outputJSON, getHeadersByHost, getCookiesByHost } from '../../../src/utils/hf';
 
 
-function isCorrectUrl(urlString) {
+function isCorrectUrl(urlString: string) {
   const url = new URL(urlString);
   return url.hostname === 'twitter.com' || url.hostname === 'x.com';
 }
