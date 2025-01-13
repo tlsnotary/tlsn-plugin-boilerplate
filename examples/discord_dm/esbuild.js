@@ -4,7 +4,7 @@ const { name } = require('./package.json');
 const { execSync } = require('child_process');
 
 const outputDir = 'dist';
-const entryFile = './index.ts';
+const entryFile = 'src/index.ts';
 const outputFile = path.join(outputDir, 'index.js');
 const outputWasm = path.join(outputDir, `${name}.tlsn.wasm`);
 
@@ -24,7 +24,7 @@ async function build() {
     console.log('esbuild completed successfully.');
 
     // Run extism-js to generate the wasm file
-    const extismCommand = `extism-js ${outputFile} -i ./index.d.ts -o ${outputWasm}`;
+    const extismCommand = `extism-js ${outputFile} -i src/index.d.ts -o ${outputWasm}`;
     execSync(extismCommand, { stdio: 'inherit' });
     console.log('extism-js completed successfully.');
   } catch (error) {

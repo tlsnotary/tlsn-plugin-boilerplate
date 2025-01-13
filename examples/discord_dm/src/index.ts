@@ -1,4 +1,4 @@
-import { redirect, notarize, outputJSON, getCookiesByHost, getHeadersByHost } from '../../src/utils/hf';
+import { redirect, notarize, outputJSON, getHeadersByHost } from '../../../src/utils/hf';
 
 
 function isValidHost(urlString: string) {
@@ -16,7 +16,7 @@ function extractConversationId(urlString: string) {
 }
 
 
-function start() {
+export function start() {
   const tabUrl = Config.get('tabUrl');
   if (tabUrl && isValidHost(tabUrl)) {
     redirect('https://discord.com/channels/@me')
@@ -27,7 +27,7 @@ function start() {
 }
 
 
-function two() {
+export function two() {
     const conversationId = extractConversationId(Config.get('tabUrl') ?? '');
     // const cookies = JSON.parse(Config.get('cookies'))['discord.com'];
     const headers = getHeadersByHost('discord.com');
@@ -44,8 +44,7 @@ function two() {
       return;
   }
 
-  Host.outputString(
-    JSON.stringify({
+  outputJSON({
       url: `https://discord.com/api/v9/channels/${conversationId}/messages?limit=2`,
       method: 'GET',
       headers: {
@@ -59,14 +58,14 @@ function two() {
       secretHeaders: [
         `authorization: ${headers['Authorization']}`
       ]
-    })
-  )
+
+})
 }
 
-function parseDiscordDm() {
+export function parseDiscordDm() {
   const bodyString = Host.inputString();
   const params = JSON.parse(bodyString);
-  console.log('PARAMS', JSON.stringify(params[0].content));
+
   if (params[0].content) {
     const revealed = `"content":"${params[0].content}"`;
     const selectionStart = bodyString.indexOf(revealed);
@@ -75,17 +74,17 @@ function parseDiscordDm() {
       bodyString.substring(0, selectionStart),
       bodyString.substring(selectionEnd, bodyString.length),
     ];
-    Host.outputString(JSON.stringify(secretResps));
+    outputJSON(secretResps);
   } else {
-    Host.outputString(JSON.stringify(false));
+    outputJSON(false);
   }
 }
 
 
-function three() {
+export function three() {
   const params = JSON.parse(Host.inputString());
   if (!params) {
-    Host.outputString(JSON.stringify(false));
+    outputJSON(false);
   } else {
     const id = notarize({
       ...params,
@@ -95,43 +94,38 @@ function three() {
   }
 }
 
-function config() {
-  Host.outputString(
-    JSON.stringify({
-      title: 'Discord DMs',
-      description: 'Notarize your Discord DMs',
+export function config() {
+  outputJSON({
+    title: 'Discord DMs',
+    description: 'Notarize your Discord DMs',
 
-      steps: [
-        {
-          title: "Goto Discord DM's",
-          description: "Log in to your discord if you haven't already",
-          cta: "Go to discord.com",
-          action: 'start'
-        },
-        {
-          title: 'Open the DM you want to notarize',
-          description: "Pick a short conversation (to meet the current size limits)",
-          cta: 'Check',
-          action: 'two'
-        },
-        {
-          title: 'Notarize DM',
-          cta: 'Notarize',
-          action: 'three',
-          prover: true
-        }
-      ],
-      hostFunctions: ['redirect', 'notarize'],
-      headers: ['discord.com'],
-      requests: [
-        {
-          url: `https://discord.com/api/v9/channels/*/messages?limit=2`,
-          method: 'GET',
-        },
-      ],
-    }),
-  );
+    steps: [
+      {
+        title: "Goto Discord DM's",
+        description: "Log in to your discord if you haven't already",
+        cta: "Go to discord.com",
+        action: 'start'
+      },
+      {
+        title: 'Open the DM you want to notarize',
+        description: "Pick a short conversation (to meet the current size limits)",
+        cta: 'Check',
+        action: 'two'
+      },
+      {
+        title: 'Notarize DM',
+        cta: 'Notarize',
+        action: 'three',
+        prover: true
+      }
+    ],
+    hostFunctions: ['redirect', 'notarize'],
+    headers: ['discord.com'],
+    requests: [
+      {
+        url: `https://discord.com/api/v9/channels/*/messages?limit=2`,
+        method: 'GET',
+      },
+    ],
+  })
 }
-
-
-module.exports = { config, start, two, three, parseDiscordDm };
