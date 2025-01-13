@@ -1,16 +1,12 @@
-function isValidHost(urlString) {
+import { redirect, notarize, outputJSON, getCookiesByHost, getHeadersByHost } from '../../src/utils/hf';
+
+
+function isValidHost(urlString: string) {
   const url = new URL(urlString);
   return url.hostname === 'discord.com' || url.hostname === 'discord.gg'
 }
 
-
-function gotoDiscord() {
-  const { redirect } = Host.getFunctions();
-  const mem = Memory.fromString('https://discord.com/channels/@me');
-  redirect(mem.offset);
-}
-
-function extractConversationId(urlString) {
+function extractConversationId(urlString: string) {
   const url = new URL(urlString);
   if (url.hostname === 'discord.com' && /\/channels\/@me\/[0-9]+$/.test(url.pathname)) {
     return url.pathname.split('/@me/')[1]
@@ -19,31 +15,33 @@ function extractConversationId(urlString) {
   }
 }
 
+
 function start() {
-  if (!isValidHost(Config.get('tabUrl'))) {
-    gotoDiscord();
-    Host.outputString(JSON.stringify(false));
+  const tabUrl = Config.get('tabUrl');
+  if (tabUrl && isValidHost(tabUrl)) {
+    redirect('https://discord.com/channels/@me')
+    outputJSON(false);
     return;
   }
-  Host.outputString(JSON.stringify(true));
+  outputJSON(true);
 }
 
 
 function two() {
-  const conversationId = extractConversationId(Config.get('tabUrl'));
-  // const cookies = JSON.parse(Config.get('cookies'))['discord.com'];
-  const headers = JSON.parse(Config.get('headers'))['discord.com'];
+    const conversationId = extractConversationId(Config.get('tabUrl') ?? '');
+    // const cookies = JSON.parse(Config.get('cookies'))['discord.com'];
+    const headers = getHeadersByHost('discord.com');
 
-  // console.log("conversationId");
-  // console.log(JSON.stringify(conversationId));
-  // console.log(JSON.stringify(headers['Authorization']));
+    // console.log("conversationId");
+    // console.log(JSON.stringify(conversationId));
+    // console.log(JSON.stringify(headers['Authorization']));
 
-  if (
-    !conversationId ||
-    !headers['Authorization']
-  ) {
-    Host.outputString(JSON.stringify(false));
-    return;
+    if (
+      !conversationId ||
+      !headers['Authorization']
+    ) {
+      Host.outputString(JSON.stringify(false));
+      return;
   }
 
   Host.outputString(
@@ -86,18 +84,14 @@ function parseDiscordDm() {
 
 function three() {
   const params = JSON.parse(Host.inputString());
-  const { notarize } = Host.getFunctions();
-  console.log(JSON.stringify('THREE PARAMS', params));
   if (!params) {
     Host.outputString(JSON.stringify(false));
   } else {
-    const mem = Memory.fromString(JSON.stringify({
-        ...params,
-       getSecretResponse: 'parseDiscordDm'
-    }));
-    const idOffset = notarize(mem.offset);
-    const id = Memory.find(idOffset).readString();
-    Host.outputString(JSON.stringify(id));
+    const id = notarize({
+      ...params,
+      getSecretResponse: 'parseDiscordDm'
+    })
+    outputJSON(id);
   }
 }
 
