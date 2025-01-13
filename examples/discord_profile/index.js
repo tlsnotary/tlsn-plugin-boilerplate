@@ -20,10 +20,15 @@ function start() {
 }
 
 
-
 function two() {
   const localStorage = JSON.parse(Config.get('localStorage'))['discord.com'];
-  const headers = JSON.parse(Config.get('headers'))['discord.com'];
+  let userId = localStorage.user_id_cache;
+  userId = userId.replace(/"/g, "");
+  console.log(JSON.stringify(localStorage));
+
+  const headers = JSON.parse(Config.get('headers'))[`https://discord.com/api/v9/users/${userId}/profile`];
+  console.log(JSON.stringify(headers));
+
 
   if (
     !localStorage.user_id_cache ||
@@ -32,10 +37,6 @@ function two() {
     Host.outputString(JSON.stringify(false));
     return;
   }
-
-  let userId = localStorage.user_id_cache;
-
-  userId = userId.replace(/"/g, "");
 
   Host.outputString(
     JSON.stringify({
@@ -81,6 +82,9 @@ function parseDiscordProfile() {
     Host.outputString(JSON.stringify(false));
   }
 }
+
+
+
 function three() {
   const params = JSON.parse(Host.inputString());
   const { notarize } = Host.getFunctions();
@@ -109,12 +113,13 @@ function config() {
       steps: [
         {
           title: "Goto Discord",
+          description: "Log in to your discord if you haven't already",
           cta: "Go to discord.com",
           action: 'start'
         },
         {
           title: 'Collect credentials',
-          description: "Log in to your Discord if you haven't already",
+          description: "Check Local Storage for User ID",
           cta: 'Check localstorage',
           action: 'two',
         },
@@ -126,7 +131,10 @@ function config() {
         }
       ],
       hostFunctions: ['redirect', 'notarize'],
-      headers: ['discord.com'],
+      headers: [
+        "discord.com",
+        "https://discord.com/api/v9/users/*/profile"
+        ],
       localStorage: ['discord.com'],
       requests: [
         {
