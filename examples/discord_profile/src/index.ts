@@ -19,10 +19,7 @@ export function two() {
   const localStorage = getLocalStorageByHost('discord.com');
   let userId = localStorage.user_id_cache;
   userId = userId.replace(/"/g, "");
-  console.log(JSON.stringify(localStorage));
-
-  const headers = getHeadersByHost(`https://discord.com/api/v9/users/${userId}/profile`)
-  console.log(JSON.stringify(headers));
+  const headers = getHeadersByHost(`https://discord.com/api/v9/users/**/profile`)
 
   if (
     !localStorage.user_id_cache ||
@@ -121,12 +118,12 @@ export function config() {
       hostFunctions: ['redirect', 'notarize'],
       headers: [
         "discord.com",
-        "https://discord.com/api/v9/users/*/profile"
+        "https://discord.com/api/v9/users/**/profile"
         ],
       localStorage: ['discord.com'],
       requests: [
         {
-          url: `https://discord.com/api/v9/users/*/profile`,
+          url: `https://discord.com/api/v9/users/**/profile`,
           method: 'GET',
         },
       ],
