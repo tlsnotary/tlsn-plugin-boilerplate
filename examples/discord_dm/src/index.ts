@@ -18,7 +18,7 @@ function extractConversationId(urlString: string) {
 
 export function start() {
   const tabUrl = Config.get('tabUrl');
-  if (tabUrl && isValidHost(tabUrl)) {
+  if (tabUrl && !isValidHost(tabUrl)) {
     redirect('https://discord.com/channels/@me')
     outputJSON(false);
     return;
@@ -30,7 +30,7 @@ export function start() {
 export function two() {
     const conversationId = extractConversationId(Config.get('tabUrl') ?? '');
     // const cookies = JSON.parse(Config.get('cookies'))['discord.com'];
-    const headers = getHeadersByHost('discord.com');
+    const headers = getHeadersByHost('https://discord.com/api/v9/channels/**/messages');
 
     // console.log("conversationId");
     // console.log(JSON.stringify(conversationId));
@@ -120,10 +120,12 @@ export function config() {
       }
     ],
     hostFunctions: ['redirect', 'notarize'],
-    headers: ['discord.com'],
+    headers: ['discord.com',
+      'https://discord.com/api/v9/channels/**/messages'
+    ],
     requests: [
       {
-        url: `https://discord.com/api/v9/channels/*/messages?limit=2`,
+        url: `https://discord.com/api/v9/channels/**/messages?limit=2`,
         method: 'GET',
       },
     ],
