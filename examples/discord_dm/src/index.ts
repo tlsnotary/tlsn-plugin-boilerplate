@@ -28,38 +28,38 @@ export function start() {
 
 
 export function two() {
-    const conversationId = extractConversationId(Config.get('tabUrl') ?? '');
-    // const cookies = JSON.parse(Config.get('cookies'))['discord.com'];
-    const headers = getHeadersByHost('https://discord.com/api/v9/channels/**/messages');
+  const conversationId = extractConversationId(Config.get('tabUrl') ?? '');
+  // const cookies = JSON.parse(Config.get('cookies'))['discord.com'];
+  const headers = getHeadersByHost('discord.com');
 
-    // console.log("conversationId");
-    // console.log(JSON.stringify(conversationId));
-    // console.log(JSON.stringify(headers['Authorization']));
+  // console.log("conversationId");
+  // console.log(JSON.stringify(conversationId));
+  // console.log(JSON.stringify(headers['Authorization']));
 
-    if (
-      !conversationId ||
-      !headers['Authorization']
-    ) {
-      Host.outputString(JSON.stringify(false));
-      return;
+  if (
+    !conversationId ||
+    !headers['Authorization']
+  ) {
+    Host.outputString(JSON.stringify(false));
+    return;
   }
 
   outputJSON({
-      url: `https://discord.com/api/v9/channels/${conversationId}/messages?limit=2`,
-      method: 'GET',
-      headers: {
-        Host: 'discord.com',
-        Accept: '*/*',
-        'Accept-Encoding': 'identity',
-        'User-Agent': headers['User-Agent'],
-        Authorization: headers['Authorization'],
-        Connection: 'close'
-      },
-      secretHeaders: [
-        `authorization: ${headers['Authorization']}`
-      ]
+    url: `https://discord.com/api/v9/channels/${conversationId}/messages?limit=2`,
+    method: 'GET',
+    headers: {
+      Host: 'discord.com',
+      Accept: '*/*',
+      'Accept-Encoding': 'identity',
+      'User-Agent': headers['User-Agent'],
+      Authorization: headers['Authorization'],
+      Connection: 'close'
+    },
+    secretHeaders: [
+      `authorization: ${headers['Authorization']}`
+    ]
 
-})
+  })
 }
 
 export function parseDiscordDm() {
@@ -120,12 +120,10 @@ export function config() {
       }
     ],
     hostFunctions: ['redirect', 'notarize'],
-    headers: ['discord.com',
-      'https://discord.com/api/v9/channels/**/messages'
-    ],
+    headers: ['discord.com'],
     requests: [
       {
-        url: `https://discord.com/api/v9/channels/**/messages?limit=2`,
+        url: `https://discord.com/api/v9/channels/*/messages?limit=2`,
         method: 'GET',
       },
     ],
