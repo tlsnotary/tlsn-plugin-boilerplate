@@ -1,0 +1,41 @@
+{
+    "title": "Axis Bank",
+    "description": "Notarize ownership of an Axis Bank account",
+    "steps": [
+        {
+            "title": "Visit Axis Bank website",
+            "cta": "Go to axisbank.com or omni.axisbank.co.in",
+            "action": "start"
+        },
+        {
+            "title": "Collect credentials",
+            "description": "Login to your account if you haven't already",
+            "cta": "Check cookies",
+            "action": "two"
+        },
+        {
+            "title": "Notarize Axis Bank account",
+            "cta": "Notarize",
+            "action": "three",
+            "prover": true
+        }
+    ],
+    "hostFunctions": [
+        "redirect",
+        "notarize"
+    ],
+    "cookies": [
+        "axisbank.co.in",
+        "omni.axisbank.co.in"
+    ],
+    "headers": [
+        "axisbank.co.in",
+        "omni.axisbank.co.in"
+    ],
+    "requests": [
+        {
+            "url": "https://axisbank.tt.omtrdc.net/rest/v1/delivery?*",
+            "method": "POST"
+        }
+    ]
+}
