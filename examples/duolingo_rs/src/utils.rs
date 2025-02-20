@@ -9,6 +9,7 @@ pub fn get_cookies_by_host(hostname: &str) -> Result<HashMap<String, String>, Er
     get_by_host("cookies", hostname)
 }
 
+#[allow(dead_code)]
 pub fn get_headers_by_host(hostname: &str) -> Result<HashMap<String, String>, Error> {
     get_by_host("headers", hostname)
 }

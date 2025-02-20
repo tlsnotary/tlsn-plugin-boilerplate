@@ -11,10 +11,10 @@ mod host_functions;
 use host_functions::{notarize, redirect};
 mod utils;
 use url::Url;
-use utils::{get_cookies_by_host, get_headers_by_host};
+use utils::get_cookies_by_host;
 
 const REQUEST: RequestObject = RequestObject {
-    url: "https://www.duolingo.com/2017-06-30/users/*?fields=streak,email",
+    url: "https://www.duolingo.com/2017-06-30/users/*?fields=streak,email,name,username",
     method: "GET",
 };
 
@@ -105,8 +105,10 @@ pub fn two() -> FnResult<Json<RequestConfig>> {
     .collect();
     let secret_headers = vec![jwt_token.clone()];
     let request = RequestConfig {
-        url: format!("https://www.duolingo.com/2017-06-30/users/{uuid}?fields=streak,email")
-            .to_string(),
+        url: format!(
+            "https://www.duolingo.com/2017-06-30/users/{uuid}?fields=streak,email,name,username"
+        )
+        .to_string(),
         method: REQUEST.method.to_string(),
         headers,
         secret_headers,
