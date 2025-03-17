@@ -1,5 +1,5 @@
-import { icon } from '../dist/assets/icon';
-import config_json from '../config.json';
+import { redirect, notarize, outputJSON, getHeadersByHost, getCookiesByHost } from '../../../src/utils/hf';
+
 /**
  * Plugin configuration
  * This configurations defines the plugin, most importantly:
@@ -8,39 +8,57 @@ import config_json from '../config.json';
  *  * the web requests it will query (or notarize)
  */
 export function config() {
-  Host.outputString(
-    JSON.stringify({
-      ...config_json,
-      icon: icon
-    }),
-  );
+  outputJSON({
+    title: 'ID.me Notarization',
+    description: 'Notarize your ID.me credentials',
+    steps: [
+      {
+        title: 'Goto ID.me',
+        description: 'Log in to your ID.me account',
+        cta: 'Go to ID.me',
+        action: 'start',
+      },
+      {
+        title: 'Get ID.me credentials',
+        description: 'Get your ID.me credentials',
+        cta: 'Get credentials',
+        action: 'two',
+      },
+      {
+        title: 'Notarize ID.me credentials',
+        cta: 'Notarize',
+        action: 'three',
+        prover: true,
+      }
+    ],
+    hostFunctions: ['redirect', 'notarize'],
+    headers: ['account.id.me'],
+    cookies: ['account.id.me'],
+    requests: [
+      {
+        url: 'https://account.id.me/api/v3/credentials.json',
+        method: 'GET',
+      },
+    ]
+  })
 }
 
-function isValidHost(urlString) {
+function isValidHost(urlString: string) {
   const url = new URL(urlString);
   return url.hostname === 'account.id.me'
-}
-
-/**
- * Redirect the browser window to x.com
- * This uses the `redirect` host function (see index.d.ts)
- */
-function gotoIDME() {
-  const { redirect } = Host.getFunctions();
-  const mem = Memory.fromString('https://account.id.me/wallet/ids');
-  redirect(mem.offset);
 }
 
 /**
  * Implementation of the first (start) plugin step
   */
 export function start() {
-  if (!isValidHost(Config.get('tabUrl'))) {
-    gotoIDME();
-    Host.outputString(JSON.stringify(false));
+  const tabUrl = Config.get('tabUrl');
+  if (tabUrl && isValidHost(tabUrl)) {
+    redirect('https://account.id.me/wallet/ids')
+    outputJSON(false);
     return;
   }
-  Host.outputString(JSON.stringify(true));
+  outputJSON(true);
 }
 
 /**
@@ -50,8 +68,8 @@ export function start() {
  * Note that the url needs to be specified in the `config` too, otherwise the request will be refused.
  */
 export function two() {
-  const cookies = JSON.parse(Config.get('cookies'))['account.id.me'];
-  const headers = JSON.parse(Config.get('headers'))['account.id.me'];
+  const cookies = getCookiesByHost('account.id.me');
+  const headers = getHeadersByHost('account.id.me');
 
   // console.log(JSON.stringify(cookies));
   // console.log(JSON.stringify(headers));
@@ -60,26 +78,24 @@ export function two() {
     !cookies["idme-session"] ||
     !headers['X-CSRF-TOKEN']
   ) {
-    Host.outputString(JSON.stringify(false));
+    outputJSON(false);
     return;
   }
 
-  Host.outputString(
-    JSON.stringify({
-      url: 'https://account.id.me/api/v3/credentials.json',
-      method: 'GET',
-      headers: {
-        'x-csrf-token': headers['x-csrf-token'],
-        Cookie: `idme-session=${cookies['idme-session']}`,
-        'Accept-Encoding': 'identity',
-        Connection: 'close',
-      },
-      secretHeaders: [
-        `x-csrf-token: ${headers['X-CSRF-TOKEN']}`,
-        `cookie: idme-session=${cookies['idme-session']}`,
-      ],
-    }),
-  );
+  outputJSON({
+    url: 'https://account.id.me/api/v3/credentials.json',
+    method: 'GET',
+    headers: {
+      'x-csrf-token': headers['x-csrf-token'],
+      Cookie: `idme-session=${cookies['idme-session']}`,
+      'Accept-Encoding': 'identity',
+      Connection: 'close',
+    },
+    secretHeaders: [
+      `x-csrf-token: ${headers['X-CSRF-TOKEN']}`,
+      `cookie: idme-session=${cookies['idme-session']}`,
+    ],
+  })
 }
 
 /**
@@ -104,9 +120,9 @@ export function parseIdentity() {
       bodyString.substring(0, selectionStart),
       bodyString.substring(selectionEnd, bodyString.length),
     ];
-    Host.outputString(JSON.stringify(secretResps));
+    outputJSON(secretResps);
   } else {
-    Host.outputString(JSON.stringify(false));
+    outputJSON(false);
   }
 }
 
@@ -115,17 +131,13 @@ export function parseIdentity() {
  */
 export function three() {
   const params = JSON.parse(Host.inputString());
-  const { notarize } = Host.getFunctions();
-
   if (!params) {
-    Host.outputString(JSON.stringify(false));
+    outputJSON(false);
   } else {
-    const mem = Memory.fromString(JSON.stringify({
+    const id = notarize({
       ...params,
-      getSecretResponse: 'parseTwitterResp',
-    }));
-    const idOffset = notarize(mem.offset);
-    const id = Memory.find(idOffset).readString();
-    Host.outputString(JSON.stringify(id));
+      getSecretResponse: 'parseIdentity',
+    })
+    outputJSON(id);
   }
 }
