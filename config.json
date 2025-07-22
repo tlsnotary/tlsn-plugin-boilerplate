@@ -35,5 +35,8 @@
             "url": "https://api.x.com/1.1/account/settings.json",
             "method": "GET"
         }
+    ],
+    "notaryUrls": [
+        "http://localhost:7047"
     ]
 }

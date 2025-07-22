@@ -74,6 +74,9 @@ export function two() {
       `cookie: ${cookieString}`,
       `authorization: ${headers.authorization}`,
     ],
+    notaryUrl: 'http://localhost:7047',
+    interactive: true,
+    verifierPlugin: 'plugin-js',
   });
 }
 
