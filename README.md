@@ -31,10 +31,11 @@ This will output the wasm binary in `dist/index.wasm`.
 1. Build the `twitter_profile` plugin as explained above.
 2. Build and install the `tlsn-extension` as documented in the [main README.md](https://github.com/tlsnotary/tlsn-extension/blob/main/README.md).
 3. [Run a local notary server](https://github.com/tlsnotary/tlsn/blob/main/crates/notary/server/README.md).
-4. Install the plugin: Click the **Add a Plugin (+)** button and select the `index.wasm` file you built in step 1. A **Twitter Profile** button should then appear below the default buttons.
-5. Click the **Twitter Profile** button. This action opens the Twitter webpage along with a TLSNotary sidebar.
-6. Follow the steps in the TLSNotary sidebar.
-7. Access the TLSNotary results by clicking the **History** button in the TLSNotary extension.
+4. Run `npm run serve-demo`
+5. Open <http://localhost:8080>
+6. Click **accept**. This action opens the Twitter webpage along with a TLSNotary sidebar.
+7. Follow the steps in the TLSNotary sidebar.
+8. Access the TLSNotary results by clicking the **History** button in the TLSNotary extension.
 
 ## Customize the Template
 
