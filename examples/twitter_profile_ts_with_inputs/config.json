@@ -1,0 +1,69 @@
+{
+    "title": "Twitter Profile",
+    "description": "Notarize ownership of a twitter profile",
+    "steps": [
+        {
+          "title": "Add Custom Note",
+          "description": "Enter a custom note to include with your Twitter profile notarization",
+          "cta": "Continue with Note",
+          "action": "collectUserNote",
+          "inputs": [
+            {
+              "name": "userNote",
+              "label": "Custom Note",
+              "type": "textarea",
+              "placeholder": "Enter any custom message or note for this notarization...",
+              "required": false,
+              "defaultValue": "Verified my Twitter profile"
+            },
+            {
+              "name": "notarizeReason",
+              "label": "Reason for Notarization",
+              "type": "select",
+              "required": true,
+              "options": [
+                { "value": "identity_verification", "label": "Identity Verification" },
+                { "value": "account_proof", "label": "Account Ownership Proof" },
+                { "value": "profile_backup", "label": "Profile Backup" },
+                { "value": "other", "label": "Other" }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Navigate to Twitter/X",
+          "description": "Ensure you're logged in to Twitter/X to verify your profile",
+          "cta": "Check Page",
+          "action": "start"
+        },
+        {
+          "title": "Collect Credentials",
+          "description": "Gathering your Twitter authentication cookies and headers",
+          "cta": "Collect Data",
+          "action": "two"
+        },
+        {
+          "title": "Notarize Twitter Profile",
+          "description": "Create a notarized proof of your Twitter profile",
+          "cta": "Notarize",
+          "action": "three",
+          "prover": true
+        }
+      ],
+    "hostFunctions": [
+        "redirect",
+        "notarize"
+    ],
+    "cookies": [
+        "https://api.x.com/1.1/account/settings.json"
+    ],
+    "headers": [
+        "https://api.x.com/1.1/account/settings.json"
+    ],
+    "requests": [
+        {
+            "url": "https://api.x.com/1.1/account/settings.json",
+            "method": "GET"
+        }
+    ]
+}
