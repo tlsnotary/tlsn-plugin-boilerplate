@@ -125,6 +125,7 @@ export function two() {
         'x-client-transaction-id': headers['x-client-transaction-id'],
         Host: 'api.x.com',
         authorization: headers.authorization,
+        notarizationReason: previousData.notarizeReason,
         'Accept-Encoding': 'identity',
         Connection: 'close',
       },
