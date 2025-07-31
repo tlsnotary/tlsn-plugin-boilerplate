@@ -4,7 +4,8 @@
   "description": "Demo TLSNotary plugin to notarize the ownership of a twitter profile",
   "main": "src/index.ts",
   "scripts": {
-    "build": "node esbuild.js"
+    "build": "node esbuild.js",
+    "serve-demo": "cp dist/*.wasm demo; serve -l 8080 demo"
   },
   "keywords": [],
   "author": "TLSNotary",
@@ -12,6 +13,7 @@
   "devDependencies": {
     "@extism/js-pdk": "^1.0.1",
     "esbuild": "^0.19.6",
+    "serve": "^14.2.4",
     "typescript": "^5.3.2"
   }
 }
