@@ -40,7 +40,7 @@ export function start() {
 
 /**
  * Implementation of step "two".
- * This step collects and validates authentication cookies and headers for 'api.x.com'.
+ * This step collects and validates authentication cookies and headers for 'axisbank.com'.
  * If all required information, it creates the request object.
  * Note that the url needs to be specified in the `config` too, otherwise the request will be refused.
  */
@@ -94,10 +94,10 @@ export function two() {
 }
 
 /**
- * This method is used to parse the Twitter response and specify what information is revealed (i.e. **not** redacted)
+ * This method is used to parse the Axis Bank response and specify what information is revealed (i.e. **not** redacted)
  * This method is optional in the notarization request. When it is not specified nothing is redacted.
  *
- * In this example it locates the `screen_name` and excludes that range from the revealed response.
+ * In this example it locates the `CUST_NAME` and excludes that range from the revealed response.
  */
 export function parseAxisResp() {
     console.log("parseAxisResp: Starting function");

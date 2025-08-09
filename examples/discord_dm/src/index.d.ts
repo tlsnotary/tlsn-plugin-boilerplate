@@ -4,7 +4,6 @@ declare module 'main' {
   export function parseDiscordDm(): I32;
   export function three(): I32;
   export function config(): I32;
-  export function parseDiscordDm(): I32;
 }
 
 declare module 'extism:host' {
