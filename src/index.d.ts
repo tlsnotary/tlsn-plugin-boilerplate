@@ -5,7 +5,6 @@ declare module 'main' {
     export function parseTwitterResp(): I32;
     export function three(): I32;
     export function config(): I32;
-    export function collectUserNote(): I32;
 }
 
 declare module 'extism:host' {
