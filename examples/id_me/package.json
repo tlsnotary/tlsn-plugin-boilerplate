@@ -1,7 +1,7 @@
 {
   "name": "idme_profile",
   "version": "1.0.0",
-  "description": "Demo TLSNotary plugin to notarize the ownership of a twitter profile",
+  "description": "Demo TLSNotary plugin to notarize the ownership of a id.me profile",
   "main": "src/index.ts",
   "scripts": {
     "build": "node esbuild.js"

@@ -35,7 +35,7 @@ export function start() {
 
 /**
  * Implementation of step "two".
- * This step collects and validates authentication cookies and headers for 'api.x.com'.
+ * This step collects and validates authentication cookies and headers for 'api.spotify.com'.
  * If all required information, it creates the request object.
  * Note that the url needs to be specified in the `config` too, otherwise the request will be refused.
  */
@@ -53,9 +53,8 @@ export function two() {
     url: 'https://api.spotify.com/v1/me/top/artists?time_range=medium_term&limit=1',
     method: 'GET',
     headers: {
-      'x-twitter-client-language': 'en',
       'x-csrf-token': headers['x-csrf-token'],
-      Host: 'api.x.com',
+      Host: 'api.spotify.com',
       authorization: headers.authorization,
       Connection: 'close',
     },
